@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Problems - Water Supply Mapping System</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="imag/applogo.png" />
+    <style>
+      body {
+        background-image: url("imag/admin.jpg");
+        background-size: cover;
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        background-color: #cbc8bf;
+        color: #000;
+        padding: 1px 0;
+        text-align: center;
+      }
+      h1 {
+        margin: -0.2px 0;
+      }
+
+      .b {
+        padding: 10px 0;
+        background-color: #cbc8bf;
+        margin: 0.8rem 0;
+      }
+
+      .b nav a {
+        color: white;
+        background-color: #000;
+        text-decoration: none;
+        padding: 10px 2rem;
+        margin: 10px 3rem;
+        border-radius: 5px 10px;
+        font-size: bold;
+      }
+
+      .b nav a:hover {
+        background-color: whitesmoke;
+        color: #000;
+      }
+
+      main {
+        max-width: 1000px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(98, 211, 22, 0.1);
+      }
+
+      .problem-list {
+        margin-top: 20px;
+      }
+
+      .problem-list table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .problem-list th,
+      .problem-list td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      .problem-list th {
+        background-color: #f2f2f2;
+      }
+
+      /* Styles for status buttons */
+      .status-button {
+        padding: 6px 12px;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #fff;
+        margin-bottom: 5px;
+      }
+
+      .solved {
+        background-color: #28a745;
+      }
+
+      .unsolved {
+        background-color: #dc3545;
+      }
+
+      .delete-button {
+        padding: 6px 12px;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #fff;
+        background-color: #dc3545;
+      }
+
+      footer {
+        text-align: center;
+      }
+      /* Additional styles for image display */
+      .problem-image {
+        max-width: 100px;
+        max-height: 100px;
+        display: block;
+        margin: auto;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .problem-image:hover {
+        transform: scale(1.1);
+      }
+
+      /* Full screen image overlay */
+      .image-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        cursor: zoom-out;
+      }
+
+      .fullscreen-image {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        border: 2px solid white;
+        border-radius: 5px;
+      }
+
+      /* Existing table styles */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f4f4f4;
+      }
+
+      .status-button,
+      .delete-button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      .solved {
+        background-color: #4caf50;
+        color: white;
+      }
+      .unsolved {
+        background-color: #f44336;
+        color: white;
+      }
+      .delete-button {
+        background-color: #555;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Manage Problems</h1>
+      <div class="b">
+        <nav>
+          <a href="admin-dashboard.html">Admin Dashboard</a> |
+          <a href="initial.html">Logout</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section>
+        <h2>Submitted Problems</h2>
+        <div class="problem-list" style="text-align: center">
+          <table>
+            <thead>
+              <tr>
+                <th>Full Name</th>
+                <th>Address</th>
+                <th>Location</th>
+                <th>Problem</th>
+                <th>Filed Date</th>
+                <th>Filed Time</th>
+                <th>Image</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="problemTableBody">
+              <!-- Problems will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p>&copy; 2024 Water Supply Mapping System. All rights reserved.</p>
+    </footer>
+
+    <!-- Full screen image overlay -->
+    <div class="image-overlay" onclick="closeFullScreen()">
+      <img class="fullscreen-image" src="" alt="Full screen image" />
+    </div>
+
+    <script>
+      function populateProblemTable() {
+        const problems = JSON.parse(localStorage.getItem("adminProblems")) || [];
+        const problemTableBody = document.getElementById("problemTableBody");
+        problemTableBody.innerHTML = "";
+        problems.forEach((problem, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${problem.fullName}</td>
+            <td>${problem.address}</td>
+            <td>${problem.location}</td>
+            <td>${problem.problem}</td>
+            <td>${problem.filedDate}</td>
+            <td>${problem.filedTime}</td>
+            <td>
+              <img src="${problem.media}" 
+                   alt="Problem Image" 
+                   class="problem-image" 
+                   onclick="openFullScreen('${problem.media}')" />
+            </td>
+            <td>${problem.status}</td>
+            <td>
+              <button class="status-button ${
+                problem.status === "Solved" ? "solved" : "unsolved"
+              }" 
+                      onclick="changeStatus(${index})">
+                ${problem.status === "Solved" ? "Mark Unsolved" : "Mark Solved"}
+              </button>
+              <button class="delete-button" onclick="confirmDelete(${index})">Delete</button>
+            </td>
+          `;
+          problemTableBody.appendChild(row);
+        });
+      }
+    
+      function changeStatus(index) {
+        const adminProblems = JSON.parse(localStorage.getItem("adminProblems")) || [];
+        const userGrievances = JSON.parse(localStorage.getItem("userGrievances")) || [];
+    
+        if (adminProblems[index]) {
+          // Toggle the status
+          const newStatus = adminProblems[index].status === "Solved" ? "Unsolved" : "Solved";
+          adminProblems[index].status = newStatus;
+    
+          // Sync with userGrievances
+          const updatedAdmin = adminProblems[index];
+          const matchingUserGrievance = userGrievances.find(grievance =>
+            grievance.fullName === updatedAdmin.fullName &&
+            grievance.address === updatedAdmin.address &&
+            grievance.location === updatedAdmin.location &&
+            grievance.filedDate === updatedAdmin.filedDate &&
+            grievance.filedTime === updatedAdmin.filedTime
+          );
+    
+          if (matchingUserGrievance) {
+            matchingUserGrievance.status = newStatus;
+          }
+    
+          // Save updated lists
+          localStorage.setItem("adminProblems", JSON.stringify(adminProblems));
+          localStorage.setItem("userGrievances", JSON.stringify(userGrievances));
+    
+          populateProblemTable();
+        }
+      }
+    
+      function confirmDelete(index) {
+        if (confirm("Are you sure you want to delete this problem?")) {
+          const problems = JSON.parse(localStorage.getItem("adminProblems")) || [];
+          problems.splice(index, 1);
+          localStorage.setItem("adminProblems", JSON.stringify(problems));
+          populateProblemTable();
+        }
+      }
+    
+      function openFullScreen(imageUrl) {
+        const overlay = document.querySelector(".image-overlay");
+        const fullscreenImg = document.querySelector(".fullscreen-image");
+        fullscreenImg.src = imageUrl;
+        overlay.style.display = "block";
+        document.body.style.overflow = "hidden";
+      }
+    
+      function closeFullScreen() {
+        document.querySelector(".image-overlay").style.display = "none";
+        document.body.style.overflow = "auto";
+      }
+    
+      // Escape key to exit fullscreen image
+      document.addEventListener("keydown", (e) => {
+        const overlay = document.querySelector(".image-overlay");
+        if (overlay.style.display === "block" && e.key === "Escape") {
+          closeFullScreen();
+        }
+      });
+    
+      // Load table on page ready
+      document.addEventListener("DOMContentLoaded", populateProblemTable);
+    </script>
+    
+  </body>
+</html>
